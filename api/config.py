@@ -12,54 +12,54 @@ ALLOWED_USERS = split(r'[ ,;，；]+', os.getenv("ALLOWED_USERS", '').replace("@
 ALLOWED_GROUPS = [g.strip() for g in split(r'[,;，；]+', os.getenv("ALLOWED_GROUPS", '')) if g.strip()]
 
 SYSTEM_INSTRUCTION = os.getenv("SYSTEM_INSTRUCTION", "")
-DEFAULT_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+DEFAULT_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
 
 # After setting up 3 rounds of dialogue, prompt the user to start a new dialogue
-prompt_new_threshold = int(3)
+prompt_new_threshold = int(6)
 
 # The default prompt when the photo has no accompanying text
-default_photo_caption = "describe this picture"
+default_photo_caption = "describe esta imagen"
 # The default prompt for video messages
-default_video_caption = "describe what is happening in this video"
+default_video_caption = "describe lo que está pasando en este video"
 # The default prompt for audio/voice messages
-default_audio_caption = "transcribe this audio"
+default_audio_caption = "transcribe este audio"
 
 """ Below is some text related to the user """
-help_text = "You can send me text or pictures. When sending pictures, please include the text in the same message."
+help_text = "Puedes enviarme texto o imágenes. Al enviar imágenes, incluye el texto en el mismo mensaje."
 command_list = (
-    "/new — Start a new chat\n"
-    "/get_model — Show current model\n"
-    "/set_model — Switch Gemini model\n"
-    "/list_models — List available models\n"
-    "/get_my_info — Get your Telegram ID\n"
-    "/help — Get help"
+    "/new — Iniciar nuevo chat\n"
+    "/get_model — Ver modelo actual\n"
+    "/set_model — Cambiar modelo de Gemini\n"
+    "/list_models — Listar modelos disponibles\n"
+    "/get_my_info — Obtener tu ID de Telegram\n"
+    "/help — Obtener ayuda"
 )
-command_format_error_info = "Command format error"
-command_invalid_error_info = "Invalid command, use /help for help"
-user_no_permission_info = "You are not allowed to use this bot."
-gemini_err_info = "Something went wrong! Please try again later."
-new_chat_info = "We're having a fresh chat."
-prompt_new_info = "Type /new to kick off a new chat."
-unable_to_recognize_content_sent = "The content you sent is not recognized!"
-group_not_allowed = "This group is not authorized. Please add the following group ID to ALLOWED_GROUPS environment variable and redeploy:"
-bot_joined_group = "Hello! Please add the following group ID to ALLOWED_GROUPS environment variable and redeploy to enable this bot:"
+command_format_error_info = "Error de formato en el comando"
+command_invalid_error_info = "Comando inválido, usa /help para ayuda"
+user_no_permission_info = "No tienes permiso para usar este bot."
+gemini_err_info = "Algo salió mal. Por favor intenta de nuevo."
+new_chat_info = "Empezamos un chat nuevo."
+prompt_new_info = "Escribe /new para iniciar un chat nuevo."
+unable_to_recognize_content_sent = "El contenido enviado no es reconocido."
+group_not_allowed = "Este grupo no está autorizado. Por favor agrega el siguiente ID a la variable ALLOWED_GROUPS y redeploya:"
+bot_joined_group = "¡Hola! Por favor agrega el siguiente ID de grupo a la variable ALLOWED_GROUPS y redeploya para activar este bot:"
 
 """ Below is some text related to the log """
-send_message_log = "Send a message. The content returned is:"
-send_photo_log = "Send a photo. The content returned is:"
-unnamed_user = "UnnamedUser"
-event_received = "event received"
-the_content_sent_is = "The content sent is:"
-the_reply_content_is = "The reply content is:"
-the_accompanying_message_is = "The accompanying message is:"
-the_logarithm_of_historical_conversations_is = "The logarithm of historical conversations is:"
-no_rights_to_use = "No rights to use"
-send_unrecognized_content = "Send unrecognized content"
+send_message_log = "Mensaje enviado. El contenido devuelto es:"
+send_photo_log = "Foto enviada. El contenido devuelto es:"
+unnamed_user = "UsuarioSinNombre"
+event_received = "evento recibido"
+the_content_sent_is = "El contenido enviado es:"
+the_reply_content_is = "El contenido de respuesta es:"
+the_accompanying_message_is = "El mensaje adjunto es:"
+the_logarithm_of_historical_conversations_is = "El número de conversaciones históricas es:"
+no_rights_to_use = "Sin permisos para usar"
+send_unrecognized_content = "Contenido no reconocido enviado"
 
 
 """ read https://ai.google.dev/api/rest/v1/GenerationConfig """
 generation_config = {
-    "max_output_tokens": 8192,
+    "max_output_tokens": 4096,
 }
 
 """ read https://ai.google.dev/api/rest/v1/HarmCategory """
