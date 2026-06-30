@@ -156,6 +156,7 @@ class Update:
         self.caption = self._caption()
         self.file_id = self._file_id()
         self.user_name = update["message"]["from"].get("username", f" [{unnamed_user}](tg://openmessage?user_id={self.from_id})")
+        self.display_name = update["message"]["from"].get("username") or update["message"]["from"].get("first_name", unnamed_user)
         self.message_id: int = update["message"]["message_id"]
         self.chat_type = self.from_type
         self.is_group = self.chat_type in ("group", "supergroup")
