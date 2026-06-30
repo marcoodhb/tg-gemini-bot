@@ -122,7 +122,7 @@ def handle_message(update_data):
     elif update.type == "text":
         send_typing(update.chat_id)
         chat = chat_manager.get_chat(update.chat_id)
-        anwser = chat.send_message(update.text)
+        anwser = chat.send_message(f"{update.display_name}: {update.text}")
         extra_text = f"\n\n{prompt_new_info}" if chat.history_length >= prompt_new_threshold * 2 else ""
         response_text = f"{anwser}{extra_text}"
         send_message(update.chat_id, response_text)
