@@ -203,7 +203,13 @@ class Update:
         reply = msg.get("reply_to_message")
         if not reply:
             return False
-        return reply.get("from", {}).get("is_bot", False)
+        from_user = reply.get("from", {})
+        if not from_user.get("is_bot", False):
+            return False
+        bot_username = _get_bot_username()
+        if not bot_username:
+            return False
+        return from_user.get("username", "").lower() == bot_username.lower()
 
     def _type(self) -> UpdateType:
         msg = self.update["message"]
