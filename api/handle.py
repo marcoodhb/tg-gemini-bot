@@ -13,14 +13,22 @@ the file through Gemini API.
 Users can also reply to previously sent media with a custom prompt.
 """
 
+import re
+
 from .auth import is_authorized, is_group_allowed
 from .command import excute_command
 from .context import ChatManager, MediaChatManager
-from .telegram import Update, send_message, send_typing, _get_bot_username
+from .telegram import Update, send_message, send_typing, _get_bot_username, get_profile_photo_file_id
 from .printLog import send_log
 from .config import *
 
 chat_manager = ChatManager()
+
+_PROFILE_PHOTO_RE = re.compile(r"\bpfp\b|\bavatar\b|foto\s+de\s+perfil", re.IGNORECASE)
+
+
+def _is_profile_photo_query(text: str) -> bool:
+    return bool(_PROFILE_PHOTO_RE.search(text))
 
 
 def _strip_bot_mention(text):
@@ -99,6 +107,29 @@ def handle_message(update_data):
         if response_text != "":
             send_message(update.chat_id, response_text)
             send_log(f"@{update.user_name} id:`{update.from_id}`{the_content_sent_is}\n{update.text}\n{the_reply_content_is}\n{response_text}")
+
+    # Pfp opinion query
+    elif update.type == "text" and _is_profile_photo_query(update.text):
+        send_typing(update.chat_id)
+
+        target_id = update.from_id
+        target_name = update.display_name
+        if is_reply:
+            replied_from = msg["reply_to_message"].get("from", {})
+            if not replied_from.get("is_bot", False):
+                target_id = replied_from.get("id", update.from_id)
+                target_name = replied_from.get("username") or replied_from.get("first_name", unnamed_user)
+
+        photo_file_id = get_profile_photo_file_id(target_id)
+
+        if photo_file_id is None:
+            response_text = no_profile_photo_info
+        else:
+            chat = MediaChatManager("photo", "image/jpeg", photo_file_id, update.text)
+            response_text = chat.send_media()
+
+        send_message(update.chat_id, response_text, reply_to_message_id=update.message_id)
+        send_log(f"@{update.user_name} id:`{update.from_id}` pidió opinión de foto de perfil de {target_name} (id {target_id})\n{the_reply_content_is}\n{response_text}")
 
     # Handle media messages (photo, video, audio, voice, video_note)
     # OR text replies to media messages
