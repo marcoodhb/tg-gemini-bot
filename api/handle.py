@@ -122,9 +122,15 @@ def handle_message(update_data):
     elif update.type == "text":
         send_typing(update.chat_id)
         chat = chat_manager.get_chat(update.chat_id)
-        anwser = chat.send_message(f"{update.display_name}: {update.text}")
-        extra_text = f"\n\n{prompt_new_info}" if chat.history_length >= prompt_new_threshold * 2 else ""
-        response_text = f"{anwser}{extra_text}"
+        
+        if update.text.strip() == "/new":
+            chat.reset()
+            response_text = new_chat_info
+        else:
+            anwser = chat.send_message(f"{update.display_name}: {update.text}")
+            extra_text = f"\n\n{prompt_new_info}" if chat.history_length >= prompt_new_threshold * 2 else ""
+            response_text = f"{anwser}{extra_text}"
+            
         send_message(update.chat_id, response_text)
         dialogueLogarithm = int(chat.history_length / 2)
         send_log(f"@{update.user_name} id:`{update.from_id}`{the_content_sent_is}\n{update.text}\n{the_reply_content_is}\n{response_text}\n{the_logarithm_of_historical_conversations_is}{dialogueLogarithm}")
