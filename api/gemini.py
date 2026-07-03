@@ -10,7 +10,8 @@ from .config import (
     gemini_err_info, new_chat_info, SYSTEM_INSTRUCTION, DEFAULT_MODEL,
 )
 
-client = genai.Client(api_key=GOOGLE_API_KEY[0])
+_key_index = 0
+client = genai.Client(api_key=GOOGLE_API_KEY[_key_index])
 
 current_model = DEFAULT_MODEL
 
@@ -29,14 +30,37 @@ def _is_retryable(exc: Exception) -> bool:
     return False
 
 
-def _call_with_retry(fn, *args, **kwargs):
-    """Call a Gemini API function with retry on transient errors."""
+def _is_quota_error(exc: Exception) -> bool:
+    """Detect quota exhaustion specifically (vs transient rate-limit)."""
+    s = str(exc).lower()
+    return "429" in s and ("quota" in s or "resource_exhausted" in s)
+
+
+def _rotate_key() -> bool:
+    """Move to the next API key, if any left. Returns True if rotated."""
+    global client, _key_index
+    if _key_index < len(GOOGLE_API_KEY) - 1:
+        _key_index += 1
+        client = genai.Client(api_key=GOOGLE_API_KEY[_key_index])
+        print(f"Quota exhausted, rotated to API key index {_key_index}")
+        return True
+    print("Quota exhausted on all keys")
+    return False
+
+
+def _call_with_retry(fn_factory, *args, **kwargs):
+    """fn_factory: callable with no args that returns the bound client method to call.
+    Re-called each attempt so it picks up the current `client` after a key rotation."""
     last_exc = None
     for attempt in range(_MAX_RETRIES):
         try:
+            fn = fn_factory()
             return fn(*args, **kwargs)
         except Exception as e:
             last_exc = e
+            if _is_quota_error(e):
+                _rotate_key()
+                continue
             if _is_retryable(e) and attempt < _MAX_RETRIES - 1:
                 time.sleep(_RETRY_DELAYS[attempt])
                 continue
@@ -57,11 +81,9 @@ def _build_gen_config():
     """Build GenerateContentConfig from config settings."""
     return types.GenerateContentConfig(
         max_output_tokens=generation_config.get("max_output_tokens", 1024),
+        temperature=generation_config.get("temperature", 1.0),
         safety_settings=[
-            types.SafetySetting(
-                category=s["category"],
-                threshold=s["threshold"],
-            )
+            types.SafetySetting(category=s["category"], threshold=s["threshold"])
             for s in safety_settings
         ],
         system_instruction=SYSTEM_INSTRUCTION if SYSTEM_INSTRUCTION else None,
@@ -69,15 +91,13 @@ def _build_gen_config():
 
 
 def list_models():
-    """list all models"""
     return client.models.list()
 
 
 def generate_content(prompt: str) -> str:
-    """generate text from prompt"""
     try:
         response = _call_with_retry(
-            client.models.generate_content,
+            lambda: client.models.generate_content,
             model=current_model,
             contents=prompt,
             config=_build_gen_config(),
@@ -93,7 +113,7 @@ def generate_text_with_image(prompt: str, image_bytes: BytesIO) -> str:
     img = PIL.Image.open(image_bytes)
     try:
         response = _call_with_retry(
-            client.models.generate_content,
+            lambda: client.models.generate_content,
             model=current_model,
             contents=[prompt, img],
             config=_build_gen_config(),
@@ -109,7 +129,7 @@ def generate_text_with_file(prompt: str, file_bytes: bytes, mime_type: str) -> s
     try:
         media_part = types.Part.from_bytes(data=file_bytes, mime_type=mime_type)
         response = _call_with_retry(
-            client.models.generate_content,
+            lambda: client.models.generate_content,
             model=current_model,
             contents=[prompt, media_part],
             config=_build_gen_config(),
@@ -132,21 +152,21 @@ class ChatConversation:
             config=_build_gen_config(),
         )
 
+    def reset(self) -> None:
+        """Start a fresh conversation, dropping all history."""
+        self.__init__()
+
     def send_message(self, prompt: str) -> str:
         """send message"""
         prompt = prompt.removeprefix("/gemini")
         prompt = prompt.removeprefix("/Gemini")
         prompt = prompt.removeprefix("/ai")
         prompt = prompt.removeprefix("/AI")
-        if prompt.startswith("/new"):
-            self.__init__()
-            result = new_chat_info
-        else:
-            try:
-                response = _call_with_retry(self.chat.send_message, prompt)
-                result = response.text
-            except Exception as e:
-                result = f"{gemini_err_info}\n{repr(e)}"
+        try:
+            response = _call_with_retry(lambda: self.chat.send_message, prompt)
+            result = response.text
+        except Exception as e:
+            result = f"{gemini_err_info}\n{repr(e)}"
         return result
 
     @property
