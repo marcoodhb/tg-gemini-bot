@@ -140,6 +140,25 @@ def get_file_content(file_url: str) -> bytes:
     return response.content
 
 
+def get_profile_photo_file_id(user_id: int):
+    """Get file_id of users most recent profile photo, or None if unavailable"""
+    try:
+        r = requests.get(
+            f"{TELEGRAM_API}/getUserProfilePhotos",
+            params={"user_id": user_id, "limit": 1},
+            timeout=5,
+        )
+        result = r.json().get("result", {})
+        photos = result.get("photos", [])
+        if not photos:
+            return None
+        largest = photos[0][-1]  # size
+        return largest.get("file_id")
+    except Exception as e:
+        print(f"Failed to get profile photo for user {user_id}: {e}")
+        return None
+
+
 UpdateType = Literal["command", "text", "voice", "video_note", "video", "audio", "photo", ""]
 
 
