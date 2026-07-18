@@ -5,7 +5,7 @@ import threading
 import traceback
 
 from .handle import handle_message
-from .config import BOT_TOKEN, ALLOWED_USERS, ALLOWED_GROUPS, DEFAULT_MODEL
+from .config import BOT_TOKEN, ALLOWED_USERS, ALLOWED_GROUPS, DEFAULT_MODEL, TELEGRAM_WEBHOOK_SECRET
 
 app = Flask(__name__)
 
