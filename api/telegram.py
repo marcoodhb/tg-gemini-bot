@@ -199,11 +199,11 @@ class Update:
         return False
 
     def is_command_for_bot(self) -> bool:
-    bot_username = _get_bot_username()
-    if not bot_username:
-        return False
-    text = self.update["message"].get("text", "")
-    return f"@{bot_username}".lower() in text.lower()
+        bot_username = _get_bot_username()
+        if not bot_username:
+            return False
+        text = self.update["message"].get("text", "")
+        return f"@{bot_username}".lower() in text.lower()
     
     def replied_to_bot(self) -> bool:
         msg = self.update["message"]
