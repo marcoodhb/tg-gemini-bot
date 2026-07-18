@@ -69,7 +69,7 @@ def handle_message(update_data):
 
     # Group chat logic
     if update.is_group:
-        if not update.is_mentioned() and not update.replied_to_bot():
+        if not update.is_mentioned() and not update.replied_to_bot() and not update.is_command_for_bot():
             return
 
         if not is_group_allowed(update.chat_id):
@@ -154,7 +154,7 @@ def handle_message(update_data):
         send_typing(update.chat_id)
         chat = chat_manager.get_chat(update.chat_id)
         
-        if update.text.strip() == "/new":
+        if update.text.strip().split("@")[0] == "/new":
             chat.reset()
             response_text = new_chat_info
         else:
