@@ -41,7 +41,11 @@ def ensure_webhook():
             if current_url != webhook_url:
                 http_requests.post(
                     f"https://api.telegram.org/bot{BOT_TOKEN}/setWebhook",
-                    json={"url": webhook_url, "allowed_updates": ["message", "callback_query", "chat_member"]},
+                    json={
+                        "url": webhook_url,
+                        "allowed_updates": ["message", "callback_query", "chat_member"],
+                        "secret_token": TELEGRAM_WEBHOOK_SECRET,
+                    },
                     timeout=5
                 )
                 print(f"Webhook set to {webhook_url} (was: {current_url or 'empty'})")
