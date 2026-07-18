@@ -13,6 +13,7 @@ ALLOWED_GROUPS = [g.strip() for g in split(r'[,;，；]+', os.getenv("ALLOWED_GR
 
 SYSTEM_INSTRUCTION = os.getenv("SYSTEM_INSTRUCTION", "")
 DEFAULT_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
+TELEGRAM_WEBHOOK_SECRET = os.getenv("TELEGRAM_WEBHOOK_SECRET", "")
 
 # After setting up 3 rounds of dialogue, prompt the user to start a new dialogue
 prompt_new_threshold = int(6)
