@@ -62,6 +62,10 @@ def ensure_webhook():
 def home():
     ensure_webhook()
     if request.method == "POST":
+        if TELEGRAM_WEBHOOK_SECRET:
+            token = request.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
+            if token != TELEGRAM_WEBHOOK_SECRET:
+                return "forbidden", 403
         update = request.json
         try:
             handle_message(update)
