@@ -81,7 +81,6 @@ def _build_gen_config():
     """Build GenerateContentConfig from config settings."""
     return types.GenerateContentConfig(
         max_output_tokens=generation_config.get("max_output_tokens", 1024),
-        temperature=generation_config.get("temperature", 1.0),
         safety_settings=[
             types.SafetySetting(category=s["category"], threshold=s["threshold"])
             for s in safety_settings
