@@ -79,9 +79,10 @@ def set_model(model_name: str):
 
 def _build_gen_config():
     """Build GenerateContentConfig from config settings."""
+    thinking_lvl = generation_config.get("thinking_level", "low")
     return types.GenerateContentConfig(
         max_output_tokens=generation_config.get("max_output_tokens", 1024),
-        thinking_level=generation_config.get("thinking_level", "low"),
+        thinking_config=types.ThinkingConfig(thinking_level=thinking_lvl),
         safety_settings=[
             types.SafetySetting(category=s["category"], threshold=s["threshold"])
             for s in safety_settings
