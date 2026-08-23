@@ -12,7 +12,7 @@ ALLOWED_USERS = split(r'[ ,;，；]+', os.getenv("ALLOWED_USERS", '').replace("@
 ALLOWED_GROUPS = [g.strip() for g in split(r'[,;，；]+', os.getenv("ALLOWED_GROUPS", '')) if g.strip()]
 
 SYSTEM_INSTRUCTION = os.getenv("SYSTEM_INSTRUCTION", "")
-DEFAULT_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.7-flash")
+DEFAULT_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 TELEGRAM_WEBHOOK_SECRET = os.getenv("TELEGRAM_WEBHOOK_SECRET", "")
 
 # After setting up 3 rounds of dialogue, prompt the user to start a new dialogue
