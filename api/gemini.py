@@ -91,6 +91,23 @@ def _build_gen_config():
     )
 
 
+def _extract_clean_text(response) -> str:
+    """ Filter"""
+    try:
+        if response.candidates and response.candidates[0].content.parts:
+            clean_text_fragments = []
+            for part in response.candidates[0].content.parts:
+                if hasattr(part, 'thought') and part.thought:
+                    continue
+                if hasattr(part, 'text') and part.text:
+                    clean_text_fragments.append(part.text)
+            if clean_text_fragments:
+                return "".join(clean_text_fragments).strip()
+        return response.text if hasattr(response, 'text') else ""
+    except Exception:
+        return response.text if hasattr(response, 'text') else ""
+        
+
 def list_models():
     return client.models.list()
 
@@ -103,7 +120,7 @@ def generate_content(prompt: str) -> str:
             contents=prompt,
             config=_build_gen_config(),
         )
-        result = response.text
+        result = _extract_clean_text(response)
     except Exception as e:
         result = f"{gemini_err_info}\n{repr(e)}"
     return result
@@ -119,7 +136,7 @@ def generate_text_with_image(prompt: str, image_bytes: BytesIO) -> str:
             contents=[prompt, img],
             config=_build_gen_config(),
         )
-        result = response.text
+        result = _extract_clean_text(response)
     except Exception as e:
         result = f"{gemini_err_info}\n{repr(e)}"
     return result
@@ -135,7 +152,7 @@ def generate_text_with_file(prompt: str, file_bytes: bytes, mime_type: str) -> s
             contents=[prompt, media_part],
             config=_build_gen_config(),
         )
-        result = response.text
+        result = _extract_clean_text(response)
     except Exception as e:
         result = f"{gemini_err_info}\n{repr(e)}"
     return result
@@ -165,7 +182,7 @@ class ChatConversation:
         prompt = prompt.removeprefix("/AI")
         try:
             response = _call_with_retry(lambda: self.chat.send_message, prompt)
-            result = response.text
+            result = _extract_clean_text(response)
         except Exception as e:
             result = f"{gemini_err_info}\n{repr(e)}"
         return result
